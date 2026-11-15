@@ -91,8 +91,8 @@ def generate_story_script():
 
 
 async def _edge_save(text, output_path):
-    voice = "ar-SA-HamedNeural"  # أو ar-EG-ShakirNeural للهجة المصرية
-    communicate = edge_tts.Communicate(text, voice, rate="-5%")
+    voice = "ar-EG-ShakirNeural"  # صوت مصري طبيعي وممتاز
+    communicate = edge_tts.Communicate(text, voice, rate="-8%")
     await communicate.save(output_path)
 
 
@@ -109,8 +109,8 @@ def generate_edge_audio(text, output_path):
 
 
 # ---------- Gemini TTS (صوت طبيعي) ----------
-USE_GEMINI_TTS = True
-GEMINI_VOICE = "Charon"  # جرّب كمان: Orus, Fenrir, Puck
+USE_GEMINI_TTS = False  # مقفول لتجنب حدود الكوتة اليومية المجانية (10 طلبات)
+GEMINI_VOICE = "Charon"  
 TTS_MODELS = ["gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"]
 TTS_STYLE = "اقرأ النص التالي بصوت راوٍ وثائقي عميق وهادئ ومشوق، بالعربية الفصحى وبإيقاع طبيعي:\n"
 
@@ -151,22 +151,6 @@ def generate_gemini_audio(text, output_path):
 
 
 def generate_all_audio(scenes):
-    """يولّد صوت كل المشاهد. لو Gemini فشل في أي مشهد نعيد الكل بـ Edge عشان الصوت يبقى موحد."""
-    if USE_GEMINI_TTS:
-        files = []
-        all_ok = True
-        for idx, scene in enumerate(scenes):
-            path = f"temp_assets/audio_{idx}.wav"
-            print(f"Gemini TTS scene {idx + 1}/{len(scenes)}")
-            if not generate_gemini_audio(scene["narration"], path):
-                all_ok = False
-                break
-            files.append(path)
-            time.sleep(7)
-        if all_ok:
-            return files
-        print("Gemini TTS failed -> falling back to Edge TTS for ALL scenes")
-
     files = []
     for idx, scene in enumerate(scenes):
         path = f"temp_assets/audio_{idx}.mp3"
@@ -218,7 +202,7 @@ def create_video_clips(scenes):
         audio_clip = AudioFileClip(audio_file)
         duration = audio_clip.duration + 0.3
 
-        # 2. الصورة (ولو فشلت نكرر آخر صورة نجحت بدل الشاشة السودة)
+        # 2. الصورة (ولو فشلت نكرر آخر صورة نجحت بدل الشاشة السودا)
         ok = download_image_with_retry(scene["image_prompt"], image_file)
         if ok:
             last_good_image = image_file
@@ -305,4 +289,4 @@ if __name__ == "__main__":
         script_data["title"],
         script_data["description"],
         script_data.get("tags", ["وثائقي", "قصص"]),
-    )
+            )
