@@ -3,8 +3,8 @@ name: Auto Generate Long YouTube Videos
 on:
   workflow_dispatch:
   schedule:
-    # جدول يومي: الساعة 12 ظهراً، 4 عصراً، و8 مساءً بتوقيت مصر (10:00, 14:00, 18:00 UTC)
-    - cron: '0 10,14,18 * * *'
+    # جدول يومي: الساعة 12:17 ظهراً، 4:17 عصراً، و8:17 مساءً بتوقيت مصر (10:17, 14:17, 18:17 UTC)
+    - cron: '17 10,14,18 * * *'
 
 jobs:
   build-and-upload:
