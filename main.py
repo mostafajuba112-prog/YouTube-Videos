@@ -34,37 +34,29 @@ VIDEO_SIZE = (1280, 720)
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-CATEGORIES = [
-    "قصة حربية تاريخية ملحمية ومعركة مصيرية غيرت مجرى التاريخ بتفاصيلها التكتيكية والإنسانية",
-    "قضية رأي عام عالمية وجريمة غامضة هزت العالم في فترة من الزمن على غرار القضايا التاريخية الشهيرة",
-    "قصة إثارة وتشويق ومغامرة بقاء حقيقية حبس فيها العالم أنفاسه بتفاصيل درامية متصاعدة",
-    "ملف تاريخي سري أو عملية استخباراتية معقدة مليئة بالخداع والتشويق",
-]
-
 
 def generate_story_script():
-    selected_category = random.choice(CATEGORIES)
-    print(f"Firing Gemini for category: {selected_category}")
+    print("Firing Gemini for completely free & diverse documentary topic selection...")
 
-    prompt = f"""
-    أنت كاتب سيناريو وثائقي محترف لقناة يوتيوب شهيرة. المطلوب كتابة سكريبت كامل ومتماسك لقصة وثائقية طويلة ومشوقة.
-    التصنيف المطلوب لهذه الحلقة: {selected_category}.
+    prompt = """
+    أنت كاتب سيناريو وثائقي عبقري ومبدع بلا حدود لقناة يوتيوب كبرى.
+    المطلوب منك اختيار وتأليف قصة وثائقية طويلة ومشوقة جداً في "أي مجال وموضوع في الكون" (تاريخي، علمي، فلكي، غموض، جريمة، أساطير كبرى، صراعات عظمى، كوارث، استخبارات، خيال علمي واقعي، اختراعات غيرت التاريخ، أو أي موضوع مذهل يخطر على بالك ولا تقيد نفسك بقالب واحد).
 
     الشروط الصارمة للسكريبت:
-    1. الهيكل السردي: مقدمة خاطفة للأنفاس، ثم تصاعد درامي للأحداث، وخاتمة حاسمة ومكتملة تماماً (لا تترك القصة مفتوحة أو مبتورة).
-    2. اللغة والأسلوب: عربية فصحى سردية بسيطة وقوية ومناسبة للإلقاء الصوتي. بدون إيموجي أو عناوين جانبية داخل النص.
-    3. الطول والتقسيم: 25 مشهداً متسلسلاً، كل مشهد فقرة سردية غنية (40 إلى 60 كلمة).
-    4. لكل مشهد اكتب image_prompt بالإنجليزية يصف المشهد بصرياً بأسلوب سينمائي واقعي (Cinematic documentary style, dramatic lighting, realistic) ويطابق ما يقال في المشهد.
-    5. التزم بالحقائق التاريخية المعروفة ولا تخترع أسماء أو تواريخ أو أرقام غير مؤكدة.
+    1. الإبداع الحر: اختر موضوعاً فريداً ومبهراً لم يستهلك كثيراً، واجعل الهيكل السردي يبدأ بمقدمة خاطفة للأنفاس تثير الفضول الفوري، ثم تصاعد درامي مذهل، وخاتمة حاسمة ومكتملة تماماً.
+    2. اللغة والأسلوب: عربية فصحى سردية بسيطة، قوية، عميقة، ومناسبة للإلقاء الصوتي الوثائقي. بدون إيموجي أو عناوين جانبية داخل نصوص السرد.
+    3. الطول والتقسيم: 25 مشهداً متسلسلاً باحتراف، كل مشهد فقرة سردية غنية ومفصلة (40 إلى 60 كلمة).
+    4. لكل مشهد اكتب image_prompt بالإنجليزية دقيق يصف المشهد بصرياً بأسلوب سينمائي وثائقي واقعي وداكن (Cinematic documentary style, dramatic lighting, highly detailed, realistic) ويطابق تماماً ما يُقال في سرد المشهد.
+    5. في حقل description، اكتب وصفاً احترافياً وموسعاً للقصة، وفي آخره ائتِ بـ 50 هاشتاج دقيق، متنوع، ومترابط تماماً مع موضوع الفيديو والقصة (مفصولة بمسافات).
 
-    أخرج النتيجة بصيغة JSON حصراً بهذا الشكل:
+    أخرج النتيجة بصيغة JSON حصراً بهذا الشكل ودون أي كود إضافي خارجه:
     {{
-        "title": "عنوان فيديو يوتيوب جذاب باللغة العربية",
-        "description": "وصف احترافي للفيديو باللغة العربية مع هاشتاجات مناسبة",
-        "tags": ["وثائقي", "قصص", "تاريخ", "غموض", "إثارة"],
+        "title": "عنوان فيديو يوتيوب وثائقي جذاب ومثير باللغة العربية",
+        "description": "وصف احترافي وموسع للفيديو باللغة العربية يليه 50 هاشتاج دقيق ومتنوع له علاقة مباشرة بالموضوع",
+        "tags": ["وثائقي", "قصص", "تاريخ", "غموض", "إثارة", "أسرار", "علوم", "كون"],
         "scenes": [
             {{
-                "narration": "النص العربي الذي سيقرأه المعلق في هذا المشهد",
+                "narration": "النص العربي الدقيق الذي سيقرأه المعلق في هذا المشهد",
                 "image_prompt": "Detailed English visual prompt matching the narration"
             }}
         ]
@@ -78,7 +70,7 @@ def generate_story_script():
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
-                    temperature=0.8,
+                    temperature=1.0,  # درجة حرارة عالية لضمان أقصى إبداع وتنوع في الأفكار
                 ),
             )
             data = json.loads(response.text)
@@ -105,48 +97,6 @@ def generate_edge_audio(text, output_path):
         except Exception as e:
             print(f"  Edge TTS retry {attempt + 1}/3 failed: {e}")
         time.sleep(3)
-    return False
-
-
-# ---------- Gemini TTS (صوت طبيعي) ----------
-USE_GEMINI_TTS = False  # مقفول لتجنب حدود الكوتة اليومية المجانية (10 طلبات)
-GEMINI_VOICE = "Charon"  
-TTS_MODELS = ["gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts"]
-TTS_STYLE = "اقرأ النص التالي بصوت راوٍ وثائقي عميق وهادئ ومشوق، بالعربية الفصحى وبإيقاع طبيعي:\n"
-
-
-def _save_wav(path, pcm, rate=24000):
-    with wave.open(path, "wb") as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(rate)
-        wf.writeframes(pcm)
-
-
-def generate_gemini_audio(text, output_path):
-    for model in TTS_MODELS:
-        for attempt in range(2):
-            try:
-                resp = client.models.generate_content(
-                    model=model,
-                    contents=TTS_STYLE + text,
-                    config=types.GenerateContentConfig(
-                        response_modalities=["AUDIO"],
-                        speech_config=types.SpeechConfig(
-                            voice_config=types.VoiceConfig(
-                                prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                    voice_name=GEMINI_VOICE
-                                )
-                            )
-                        ),
-                    ),
-                )
-                pcm = resp.candidates[0].content.parts[0].inline_data.data
-                _save_wav(output_path, pcm)
-                return True
-            except Exception as e:
-                print(f"  Gemini TTS [{model}] attempt {attempt + 1} failed: {e}")
-                time.sleep(20)
     return False
 
 
@@ -288,5 +238,5 @@ if __name__ == "__main__":
         video_file,
         script_data["title"],
         script_data["description"],
-        script_data.get("tags", ["وثائقي", "قصص"]),
-            )
+        script_data.get("tags", ["وثائقي", "قصص", "تاريخ"]),
+    )
