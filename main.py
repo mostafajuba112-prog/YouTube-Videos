@@ -46,7 +46,7 @@ def generate_story_script():
 
     الشروط الصارمة للسكريبت:
     1. الإبداع الحر: اختر موضوعاً فريداً ومبهراً لم يستهلك كثيراً، واجعل الهيكل السردي يبدأ بمقدمة خاطفة للأنفاس تثير الفضول الفوري، ثم تصاعد درامي مذهل، وخاتمة حاسمة ومكتملة تماماً.
-    2. اللغة والأسلوب: عربية فصحى سردية بسيطة، قوية، عميقة، ومناسبة للإلقاء الصوتى الوثائقي. بدون إيموجي أو عناوين جانبية داخل نصوص السرد.
+    2. اللغة والأسلوب: عربية فصحى سردية بسيطة، قوية، عميقة، ومناسبة للإلقاء الصوتي الوثائقي. بدون إيموجي أو عناوين جانبية داخل نصوص السرد.
     3. الطول والتقسيم: 25 مشهداً متسلسلاً باحتراف، كل مشهد فقرة سردية غنية ومفصلة (40 إلى 60 كلمة).
     4. لكل مشهد اكتب image_prompt بالإنجليزية دقيق يصف المشهد بصرياً بأسلوب سينمائي وثائقي واقعي وداكن (Cinematic documentary style, dramatic lighting, highly detailed, realistic) ويطابق تماماً ما يُقال في سرد المشهد.
     5. في حقل description، اكتب وصفاً احترافياً وموسعاً للقصة، وفي آخره ائتِ بـ 50 هاشتاج دقيق، متنوع، ومترابط تماماً مع موضوع الفيديو والقصة (مفصولة بمسافات).
@@ -65,23 +65,29 @@ def generate_story_script():
     }
     """
 
-    for attempt in range(3):
-        try:
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    response_mime_type="application/json",
-                    temperature=1.0,
-                ),
-            )
-            data = json.loads(response.text)
-            if "scenes" in data and len(data["scenes"]) >= 15:
-                return data
-        except Exception as e:
-            print(f"Attempt {attempt + 1} failed for script generation: {e}")
-            time.sleep(5)
-    raise Exception("Failed to generate a valid long script after 3 attempts.")
+    models_to_try = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"]
+
+    for model_name in models_to_try:
+        for attempt in range(3):
+            try:
+                print(f"Trying {model_name} (Attempt {attempt + 1}/3)...")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        response_mime_type="application/json",
+                        temperature=1.0,
+                    ),
+                )
+                data = json.loads(response.text)
+                if "scenes" in data and len(data["scenes"]) >= 15:
+                    print(f"Script generated successfully using {model_name}!")
+                    return data
+            except Exception as e:
+                print(f"Model {model_name} attempt {attempt + 1} failed: {e}")
+                time.sleep(15 * (attempt + 1))
+
+    raise Exception("Failed to generate a valid long script after trying all models.")
 
 
 def clean_text_for_speech(text):
