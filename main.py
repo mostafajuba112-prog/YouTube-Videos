@@ -6,6 +6,8 @@ import wave
 import asyncio
 import random
 import urllib.parse
+import html
+import re
 import requests
 from PIL import Image, ImageFile
 from io import BytesIO
@@ -44,23 +46,23 @@ def generate_story_script():
 
     الشروط الصارمة للسكريبت:
     1. الإبداع الحر: اختر موضوعاً فريداً ومبهراً لم يستهلك كثيراً، واجعل الهيكل السردي يبدأ بمقدمة خاطفة للأنفاس تثير الفضول الفوري، ثم تصاعد درامي مذهل، وخاتمة حاسمة ومكتملة تماماً.
-    2. اللغة والأسلوب: عربية فصحى سردية بسيطة، قوية، عميقة، ومناسبة للإلقاء الصوتي الوثائقي. بدون إيموجي أو عناوين جانبية داخل نصوص السرد.
+    2. اللغة والأسلوب: عربية فصحى سردية بسيطة، قوية، عميقة، ومناسبة للإلقاء الصوتى الوثائقي. بدون إيموجي أو عناوين جانبية داخل نصوص السرد.
     3. الطول والتقسيم: 25 مشهداً متسلسلاً باحتراف، كل مشهد فقرة سردية غنية ومفصلة (40 إلى 60 كلمة).
     4. لكل مشهد اكتب image_prompt بالإنجليزية دقيق يصف المشهد بصرياً بأسلوب سينمائي وثائقي واقعي وداكن (Cinematic documentary style, dramatic lighting, highly detailed, realistic) ويطابق تماماً ما يُقال في سرد المشهد.
     5. في حقل description، اكتب وصفاً احترافياً وموسعاً للقصة، وفي آخره ائتِ بـ 50 هاشتاج دقيق، متنوع، ومترابط تماماً مع موضوع الفيديو والقصة (مفصولة بمسافات).
 
     أخرج النتيجة بصيغة JSON حصراً بهذا الشكل ودون أي كود إضافي خارجه:
-    {{
+    {
         "title": "عنوان فيديو يوتيوب وثائقي جذاب ومثير باللغة العربية",
         "description": "وصف احترافي وموسع للفيديو باللغة العربية يليه 50 هاشتاج دقيق ومتنوع له علاقة مباشرة بالموضوع",
         "tags": ["وثائقي", "قصص", "تاريخ", "غموض", "إثارة", "أسرار", "علوم", "كون"],
         "scenes": [
-            {{
+            {
                 "narration": "النص العربي الدقيق الذي سيقرأه المعلق في هذا المشهد",
                 "image_prompt": "Detailed English visual prompt matching the narration"
-            }}
+            }
         ]
-    }}
+    }
     """
 
     for attempt in range(3):
@@ -70,7 +72,7 @@ def generate_story_script():
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",
-                    temperature=1.0,  # درجة حرارة عالية لضمان أقصى إبداع وتنوع في الأفكار
+                    temperature=1.0,
                 ),
             )
             data = json.loads(response.text)
@@ -82,17 +84,39 @@ def generate_story_script():
     raise Exception("Failed to generate a valid long script after 3 attempts.")
 
 
+def clean_text_for_speech(text):
+    text = html.unescape(text)
+    text = re.sub(r'[\*\#\_`~•\U00010000-\U0010ffff]', '', text)
+    text = re.sub(r'[^\w\s\u0600-\u06FF\.,،؟!\-]', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
+
+
 async def _edge_save(text, output_path):
-    voice = "ar-EG-ShakirNeural"  # صوت مصري طبيعي وممتاز
-    communicate = edge_tts.Communicate(text, voice, rate="-8%")
-    await communicate.save(output_path)
+    cleaned_text = clean_text_for_speech(text)
+    if not cleaned_text:
+        cleaned_text = "النص غير متوفر"
+
+    voices = ["ar-EG-ShakirNeural", "ar-SA-ZariyahNeural", "ar-JO-SanaNeural"]
+    for voice in voices:
+        try:
+            communicate = edge_tts.Communicate(cleaned_text, voice, rate="-8%", pitch="-2Hz")
+            await communicate.save(output_path)
+            if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+                return True
+        except Exception as e:
+            print(f"  Voice {voice} failed: {e}")
+    return False
 
 
 def generate_edge_audio(text, output_path):
     for attempt in range(3):
         try:
-            asyncio.run(_edge_save(text, output_path))
-            if os.path.exists(output_path) and os.path.getsize(output_path) > 0:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            success = loop.run_until_complete(_edge_save(text, output_path))
+            loop.close()
+            if success:
                 return True
         except Exception as e:
             print(f"  Edge TTS retry {attempt + 1}/3 failed: {e}")
@@ -101,6 +125,7 @@ def generate_edge_audio(text, output_path):
 
 
 def generate_all_audio(scenes):
+    os.makedirs("temp_assets", exist_ok=True)
     files = []
     for idx, scene in enumerate(scenes):
         path = f"temp_assets/audio_{idx}.mp3"
